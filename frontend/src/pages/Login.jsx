@@ -134,7 +134,7 @@ const Login = () => {
           <input 
             {...register('email')}
             type="email" 
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-600"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-600 text-gray-900 dark:text-white"
             placeholder="admin@stockflow.com"
           />
           {errors.email && <p className="text-red-500 text-xs mt-1.5 font-medium absolute -bottom-5 left-0">{errors.email.message}</p>}
@@ -145,7 +145,7 @@ const Login = () => {
           <input 
             {...register('password')}
             type="password" 
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-600"
+            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all shadow-sm hover:border-gray-300 dark:hover:border-gray-600 text-gray-900 dark:text-white"
             placeholder="••••••••"
           />
           {errors.password && <p className="text-red-500 text-xs mt-1.5 font-medium absolute -bottom-5 left-0">{errors.password.message}</p>}
