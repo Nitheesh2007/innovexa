@@ -3,8 +3,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShieldCheck, Loader2 } from 'lucide-react';
+import { ShieldCheck, Loader2, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
 import { useGoogleLogin } from '@react-oauth/google';
 import { motion } from 'framer-motion';
@@ -16,6 +17,7 @@ const loginSchema = z.object({
 
 const Login = () => {
   const { login, googleLogin, githubLogin } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState(null);
@@ -110,11 +112,20 @@ const Login = () => {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="flex flex-col h-full w-full"
+      className="flex flex-col h-full w-full relative"
     >
-      <motion.div variants={itemVariants} className="mb-6 text-center lg:text-left">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">Welcome back</h2>
-        <p className="text-gray-500 dark:text-gray-400 font-medium">Please enter your details to sign in.</p>
+      <motion.div variants={itemVariants} className="mb-6 flex justify-between items-start text-center lg:text-left">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">Welcome back</h2>
+          <p className="text-gray-500 dark:text-gray-400 font-medium">Please enter your details to sign in.</p>
+        </div>
+        <button 
+          onClick={toggleTheme}
+          type="button"
+          className="p-2.5 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 shadow-sm transition-all hover:scale-110 shrink-0"
+        >
+          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
       </motion.div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -154,7 +165,7 @@ const Login = () => {
           disabled={loading || socialLoading}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_8px_20px_-6px_rgba(59,130,246,0.5)] flex justify-center items-center gap-2"
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_8px_20px_-6px_rgba(249,115,22,0.5)] flex justify-center items-center gap-2"
         >
           {loading ? <><Loader2 className="animate-spin" size={20} /> Signing in...</> : 'Sign in to account'}
         </motion.button>
