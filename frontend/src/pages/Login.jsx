@@ -1,25 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
+import { ShieldCheck, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
-import { Loader2, ShieldCheck } from 'lucide-react';
+import { useGoogleLogin } from '@react-oauth/google';
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
 const Login = () => {
-  const { login, mockSocialLogin } = useAuth();
+  const { login, googleLogin, githubLogin } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState(null);
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(loginSchema)
+  });
+
+  // Handle GitHub OAuth callback
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    if (code) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      handleGithubCallback(code);
+    }
+  }, []);
+
+  const handleGithubCallback = async (code) => {
+    try {
+      toast.dismiss();
+      setSocialLoading('GitHub');
+      await githubLogin(code);
+      toast.success(`Successfully logged in with GitHub!`, { id: 'social-success' });
+      navigate('/dashboard');
+    } catch (error) {
+      toast.error(`Failed to login with GitHub`, { id: 'social-error' });
+    } finally {
+      setSocialLoading(null);
+    }
+  };
+
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        toast.dismiss();
+        setSocialLoading('Google');
+        await googleLogin(tokenResponse.access_token);
+        toast.success(`Successfully logged in with Google!`, { id: 'social-success' });
+        navigate('/dashboard');
+      } catch (error) {
+        toast.error(`Failed to login with Google`, { id: 'social-error' });
+      } finally {
+        setSocialLoading(null);
+      }
+    },
+    onError: () => {
+      toast.error('Google Sign-In was cancelled or failed.');
+    }
   });
 
   const onSubmit = async (data) => {
@@ -39,18 +83,12 @@ const Login = () => {
     }
   };
 
-  const handleSocialLogin = async (provider) => {
-    try {
-      toast.dismiss();
-      setSocialLoading(provider);
-      await mockSocialLogin(provider);
-      toast.success(`Successfully logged in with ${provider}!`, { id: 'social-success' });
-      navigate('/dashboard');
-    } catch (error) {
-      toast.error(`Failed to login with ${provider}`, { id: 'social-error' });
-    } finally {
-      setSocialLoading(null);
+  const handleGitHubClick = () => {
+    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
+    if (!clientId || clientId.includes('placeholder') || clientId.includes('your_')) {
+      return toast.error('GitHub Client ID is not configured.');
     }
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=user:email`;
   };
 
   return (
@@ -93,7 +131,7 @@ const Login = () => {
         <button 
           type="submit" 
           disabled={loading || socialLoading}
-          className="w-full bg-primary hover:bg-primary-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary-500/30 flex justify-center items-center gap-2 hover:-translate-y-0.5"
+          className="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary-500/30 flex justify-center items-center gap-2 hover:-translate-y-0.5"
         >
           {loading ? <><Loader2 className="animate-spin" size={20} /> Signing in...</> : 'Sign in to account'}
         </button>
@@ -110,7 +148,7 @@ const Login = () => {
         <div className="grid grid-cols-2 gap-4">
           <button 
             type="button" 
-            onClick={() => handleSocialLogin('Google')}
+            onClick={() => loginWithGoogle()}
             disabled={loading || socialLoading}
             className="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors text-sm font-semibold text-gray-700 dark:text-gray-300 shadow-sm hover:shadow-md"
           >
@@ -121,7 +159,7 @@ const Login = () => {
           </button>
           <button 
             type="button" 
-            onClick={() => handleSocialLogin('GitHub')}
+            onClick={handleGitHubClick}
             disabled={loading || socialLoading}
             className="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors text-sm font-semibold text-gray-700 dark:text-gray-300 shadow-sm hover:shadow-md"
           >
