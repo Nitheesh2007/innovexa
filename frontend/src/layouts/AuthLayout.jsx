@@ -65,16 +65,37 @@ const AuthLayout = () => {
       </div>
 
       {/* Right Login Side */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative z-20">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 lg:p-12 relative z-20 overflow-hidden">
+        
+        {/* Subtle right-side background elements */}
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4 }}
-          className="w-full max-w-md glass dark:bg-gray-800/80 p-8 sm:p-10 rounded-[2rem] shadow-2xl border border-white/40 dark:border-white/10"
+          animate={{ y: [-20, 20, -20], rotate: [0, 10, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/4 right-1/4 w-32 h-32 bg-primary-400/20 rounded-full blur-[40px] pointer-events-none hidden lg:block"
+        />
+        <motion.div 
+          animate={{ y: [20, -20, 20], rotate: [0, -10, 0] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-1/4 left-1/4 w-40 h-40 bg-indigo-400/20 rounded-full blur-[50px] pointer-events-none hidden lg:block"
+        />
+
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.5, type: "spring", stiffness: 200, damping: 20 }}
+          className="w-full max-w-[420px] bg-white/80 dark:bg-gray-800/90 backdrop-blur-xl p-8 sm:p-10 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-white/60 dark:border-white/10 relative z-10"
         >
           <div className="mb-8 text-center lg:hidden">
-            <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-indigo-600 dark:from-primary-400 dark:to-indigo-400 tracking-tight mb-2">StockFlow</h1>
-            <p className="text-gray-500 dark:text-gray-400">Manage Your Inventory Smarter</p>
+            <motion.div 
+              initial={{ scale: 0.9 }} 
+              animate={{ scale: 1 }} 
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary-500 to-indigo-600 mb-4 shadow-lg"
+            >
+              <Package className="text-white w-8 h-8" />
+            </motion.div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-indigo-600 dark:from-primary-400 dark:to-indigo-400 tracking-tight mb-2">StockFlow</h1>
+            <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">Manage Your Inventory Smarter</p>
           </div>
           <Outlet />
         </motion.div>
