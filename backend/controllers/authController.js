@@ -142,3 +142,104 @@ exports.getProfile = async (req, res, next) => {
     next(error);
   }
 };
+
+const { OAuth2Client } = require('google-auth-library');
+const axios = require('axios');
+
+exports.googleLogin = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    
+    const ticket = await googleClient.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const { email, name } = payload;
+    
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = await User.create({
+        name,
+        email,
+        password: Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8),
+        role: 'staff' // default role
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Google login successful',
+      data: {
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token: generateToken(user._id),
+      }
+    });
+  } catch (error) {
+    console.error('Google Auth Error:', error);
+    res.status(401).json({ success: false, message: 'Invalid Google token' });
+  }
+};
+
+exports.githubLogin = async (req, res, next) => {
+  try {
+    const { code } = req.body;
+    
+    const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
+      client_id: process.env.GITHUB_CLIENT_ID,
+      client_secret: process.env.GITHUB_CLIENT_SECRET,
+      code
+    }, {
+      headers: { Accept: 'application/json' }
+    });
+
+    const accessToken = tokenResponse.data.access_token;
+    if (!accessToken) {
+      return res.status(401).json({ success: false, message: 'Failed to authenticate with GitHub' });
+    }
+
+    const userResponse = await axios.get('https://api.github.com/user', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    
+    const emailResponse = await axios.get('https://api.github.com/user/emails', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    
+    const primaryEmail = emailResponse.data.find(e => e.primary)?.email || emailResponse.data[0]?.email;
+    const { name, login } = userResponse.data;
+
+    if (!primaryEmail) {
+      return res.status(400).json({ success: false, message: 'No email found from GitHub' });
+    }
+
+    let user = await User.findOne({ email: primaryEmail });
+    if (!user) {
+      user = await User.create({
+        name: name || login,
+        email: primaryEmail,
+        password: Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8),
+        role: 'staff'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'GitHub login successful',
+      data: {
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token: generateToken(user._id),
+      }
+    });
+  } catch (error) {
+    console.error('GitHub Auth Error:', error);
+    res.status(401).json({ success: false, message: 'Invalid GitHub code' });
+  }
+};

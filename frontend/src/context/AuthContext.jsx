@@ -53,28 +53,36 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  const mockSocialLogin = async (provider) => {
-    // Simulate a brief delay to mimic OAuth redirect and verification
+  const googleLogin = async (token) => {
     setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Simulate successful backend authentication
-    const fakeToken = "mock_social_jwt_token_12345";
-    const fakeUser = {
-      _id: "mock_social_user",
-      name: provider === "Google" ? "Google User" : "GitHub User",
-      email: `${provider.toLowerCase()}@example.com`,
-      role: "admin", // Granting admin role for testing ease
-    };
-    
-    localStorage.setItem('token', fakeToken);
-    setUser(fakeUser);
-    setLoading(false);
-    return { success: true, data: { user: fakeUser, token: fakeToken } };
+    try {
+      const res = await api.post('/auth/google', { token });
+      localStorage.setItem('token', res.data.data.token);
+      setUser(res.data.data);
+      return { success: true, data: res.data };
+    } catch (error) {
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const githubLogin = async (code) => {
+    setLoading(true);
+    try {
+      const res = await api.post('/auth/github', { code });
+      localStorage.setItem('token', res.data.data.token);
+      setUser(res.data.data);
+      return { success: true, data: res.data };
+    } catch (error) {
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, adminLogin, register, mockSocialLogin, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, adminLogin, register, googleLogin, githubLogin, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
