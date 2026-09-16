@@ -1,0 +1,12 @@
+{
+  "name": "stockflow",
+  "version": "1.0.0",
+  "description": "StockFlow Single Localhost Architecture",
+  "scripts": {
+    "start": "node start.js",
+    "dev": "node start.js --dev",
+    "build": "cd frontend && npm run build"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
