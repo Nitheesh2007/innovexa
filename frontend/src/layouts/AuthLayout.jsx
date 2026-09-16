@@ -9,16 +9,6 @@ const AuthLayout = () => {
 
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 transition-colors duration-500 overflow-hidden text-gray-900 dark:text-gray-100 relative">
-      
-      {/* Theme Toggle Button */}
-      <div className="absolute top-6 right-6 z-50">
-        <button 
-          onClick={toggleTheme}
-          className="p-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md rounded-full text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:scale-110"
-        >
-          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
-      </div>
 
       {/* Left Showcase Side (Hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 overflow-hidden">
