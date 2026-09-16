@@ -11,6 +11,13 @@
   --color-primary-500: #3b82f6;
   --color-primary-600: #2563eb;
   --color-primary-900: #1e3a8a;
+  
+  /* Missing colors for buttons */
+  --color-orange-500: #f97316;
+  --color-orange-600: #ea580c;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #d97706;
 }
 
 body {
