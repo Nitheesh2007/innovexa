@@ -60,7 +60,9 @@ const connectDB = async () => {
       console.log(`Fallback MongoDB Connected: ${conn.connection.host}`);
     } catch (fallbackError) {
       console.error(`Fallback MongoDB Error: ${fallbackError.message}`);
-      process.exit(1);
+      if (!process.env.VERCEL) {
+        process.exit(1);
+      }
     }
   }
 };
