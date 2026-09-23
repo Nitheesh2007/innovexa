@@ -1,23 +1,47 @@
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
-  if (mongoose.connection.readyState === 1) {
-    return;
+  // Reuse existing connection if active
+  if (mongoose.connection.readyState >= 1) {
+    return mongoose.connection;
   }
+
+  const mongoUri = process.env.MONGODB_URI;
+
+  // On Vercel Serverless environment
+  if (process.env.VERCEL) {
+    if (!mongoUri) {
+      console.warn('⚠️ MONGODB_URI is not defined in Vercel environment variables. Please add MONGODB_URI in Vercel Project Settings to connect to MongoDB Atlas.');
+      return;
+    }
+    try {
+      const conn = await mongoose.connect(mongoUri, {
+        serverSelectionTimeoutMS: 5000
+      });
+      console.log(`MongoDB Connected (Vercel Serverless): ${conn.connection.host}`);
+      return conn;
+    } catch (error) {
+      console.error(`MongoDB Vercel Connection Error: ${error.message}`);
+      return;
+    }
+  }
+
+  // Local development flow with in-memory fallback
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/stockflow', {
+    const conn = await mongoose.connect(mongoUri || 'mongodb://localhost:27017/stockflow', {
       serverSelectionTimeoutMS: 2000
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
+    return conn;
   } catch (error) {
     console.error(`MongoDB Connection Error: ${error.message}`);
     console.log('Attempting to use in-memory database as fallback for testing...');
-    
+
     try {
       const fs = require('fs');
       const path = require('path');
       const dbPath = path.join(__dirname, '../../.mongo-data');
-      
+
       if (!fs.existsSync(dbPath)) {
         fs.mkdirSync(dbPath, { recursive: true });
       }
@@ -55,9 +79,10 @@ const connectDB = async () => {
         }
       }
 
-      const mongoUri = mongoServer.getUri();
-      const conn = await mongoose.connect(mongoUri);
+      const fallbackUri = mongoServer.getUri();
+      const conn = await mongoose.connect(fallbackUri);
       console.log(`Fallback MongoDB Connected: ${conn.connection.host}`);
+      return conn;
     } catch (fallbackError) {
       console.error(`Fallback MongoDB Error: ${fallbackError.message}`);
       if (!process.env.VERCEL) {

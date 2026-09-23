@@ -39,9 +39,25 @@ app.use('/api', limiter);
 // Static Uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Ensure Database is connected on serverless API requests
+app.use(async (req, res, next) => {
+  if (req.path.startsWith('/api') && req.path !== '/api/health') {
+    try {
+      await connectDB();
+    } catch (err) {
+      console.error("Database connection middleware notice:", err.message);
+    }
+  }
+  next();
+});
+
 // ----------------------------------------------------
 // Health & System Diagnostic Endpoints
 // ----------------------------------------------------
+app.get('/api', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'StockFlow API running', timestamp: new Date().toISOString() });
+});
+
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -113,7 +129,7 @@ const frontendPath = path.join(__dirname, '../frontend/dist');
 app.use(express.static(frontendPath));
 
 app.get('*', (req, res) => {
-  if (req.path.startsWith('/api/')) {
+  if (req.path.startsWith('/api/') || process.env.VERCEL) {
     return res.status(404).json({ success: false, message: 'API endpoint not found' });
   }
   res.sendFile(path.join(frontendPath, 'index.html'));
@@ -143,13 +159,16 @@ async function startServer() {
     console.error("Database startup notice:", err.message);
   }
 
-  if (process.env.NODE_ENV !== 'test') {
+  if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
     app.listen(PORT, () => {
       console.log(`StockFlow Server running in ${process.env.NODE_ENV || 'production'} mode on port ${PORT}`);
     });
   }
 }
 
-startServer();
+// Only start standalone server listener in local/dedicated server environment
+if (!process.env.VERCEL) {
+  startServer();
+}
 
 module.exports = app;
