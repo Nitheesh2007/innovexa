@@ -1,101 +1,235 @@
 import React, { useState } from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { LogOut, LayoutDashboard, Package, Moon, Sun, Settings, Camera, Bot, Brain, FileText, Users, ShoppingCart, Truck, Search } from 'lucide-react';
+import { 
+  LogOut, 
+  LayoutDashboard, 
+  Package, 
+  Moon, 
+  Sun, 
+  Bot, 
+  Brain, 
+  FileText, 
+  Users, 
+  ShoppingCart, 
+  Truck, 
+  Search, 
+  Shield, 
+  Receipt, 
+  Store, 
+  RotateCcw, 
+  PieChart, 
+  Layers, 
+  Sparkles,
+  Factory,
+  Wrench,
+  Building2,
+  ArrowRightLeft
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GlobalSearch from '../components/GlobalSearch';
+import { useLanguage } from '../context/LanguageContext';
+
+const navigationSections = [
+  {
+    category: "OPERATIONS",
+    items: [
+      { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+      { to: "/pos", icon: Store, label: "POS Terminal", badge: "Live" },
+      { to: "/products", icon: Package, label: "Products Catalog" },
+      { to: "/inventory", icon: Layers, label: "Inventory Ledger" },
+      { to: "/warehouses", icon: Building2, label: "Multi-Warehouse", badge: "Network" },
+      { to: "/orders", icon: ShoppingCart, label: "Sales & Orders" },
+      { to: "/invoices", icon: Receipt, label: "Invoices & Billing" },
+      { to: "/returns", icon: RotateCcw, label: "Returns & RMA" },
+      { to: "/suppliers", icon: Truck, label: "Suppliers" },
+    ]
+  },
+  {
+    category: "MANUFACTURING & ASSETS",
+    items: [
+      { to: "/bom", icon: Layers, label: "Bill of Materials", badge: "BOM" },
+      { to: "/production", icon: Factory, label: "Work Orders", badge: "Floor" },
+      { to: "/assets", icon: Wrench, label: "Asset Tracking", badge: "Equip" }
+    ]
+  },
+  {
+    category: "INTELLIGENCE & FINANCE",
+    items: [
+      { to: "/ai", icon: Bot, label: "StockFlow AI", highlight: true },
+      { to: "/intelligence", icon: Brain, label: "ML Forecasting" },
+      { to: "/finance", icon: PieChart, label: "Financial Ledger" },
+      { to: "/reports", icon: FileText, label: "Reports & Analytics" },
+    ]
+  },
+  {
+    category: "ADMINISTRATION",
+    items: [
+      { to: "/users", icon: Users, label: "Staff & Team" },
+      { to: "/activity", icon: Shield, label: "Audit & Logs" },
+    ]
+  }
+];
 
 const DashboardLayout = () => {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { t } = useLanguage();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const location = useLocation();
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
+  const isActive = (path) => {
+    if (path === '/dashboard') {
+      return location.pathname === '/dashboard';
+    }
+    return location.pathname.startsWith(path);
+  };
+
   return (
-    <div className="flex h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 text-gray-900 dark:text-gray-100 transition-colors duration-500 overflow-hidden">
-      {/* Sidebar with Glassmorphism */}
-      <aside className="w-64 glass border-r border-white/20 dark:border-white/5 flex flex-col z-10 shadow-lg shadow-blue-900/5">
-        <div className="p-6">
-          <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-indigo-500">StockFlow</h1>
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 overflow-hidden font-sans">
+      {/* Sidebar with Professional Grouping */}
+      <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-20 shadow-sm">
+        {/* Brand Header matching stockflowsystems.com */}
+        <div className="p-4 border-b border-hairline flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-700 text-white shadow-xs">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-white" aria-hidden="true">
+                <path d="M16.5 9.4 7.5 4.21"></path>
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.29 7 12 12 20.71 7"></polyline>
+                <line x1="12" y1="22" x2="12" y2="12"></line>
+              </svg>
+            </div>
+            <div>
+              <span className="font-display text-lg font-bold tracking-[-0.03em] text-slate-900 dark:text-white">
+                stockflow
+              </span>
+              <p className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Inventory App</p>
+            </div>
+          </Link>
         </div>
-        <nav className="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
-          {[
-            { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-            { to: "/products", icon: Package, label: "Products" },
-            { to: "/suppliers", icon: Truck, label: "Suppliers" },
-            { to: "/orders", icon: ShoppingCart, label: "Sales & Orders" },
-            { to: "/inventory", icon: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>, label: "Inventory Ledger" },
-            { to: "/ai", icon: Bot, label: "StockFlow AI", extraClass: "text-primary bg-primary/10 border border-primary/20 glowing-border" },
-            { to: "/intelligence", icon: Brain, label: "ML Intelligence" },
-            { to: "/reports", icon: FileText, label: "Reports" },
-            { to: "/users", icon: Users, label: "Staff Users" },
-          ].map((link, idx) => (
-            <Link 
-              key={idx}
-              to={link.to} 
-              className={`flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-300 group ${link.extraClass || ''}`}
-            >
-              <link.icon size={20} className="group-hover:scale-110 transition-transform duration-300" />
-              <span className="font-medium">{link.label}</span>
-            </Link>
-          ))}
-        </nav>
-        <div className="p-4 border-t border-white/20 dark:border-white/5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-500 to-indigo-500 text-white flex items-center justify-center font-bold shadow-md shadow-primary-500/30">
-                {user?.name?.charAt(0).toUpperCase()}
+
+        {/* Categorized Navigation */}
+        <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto custom-scrollbar">
+          {navigationSections.map((sec, secIdx) => (
+            <div key={secIdx} className="space-y-1">
+              <div className="px-3 pb-1 text-[11px] font-bold tracking-wider uppercase text-slate-400 dark:text-slate-500">
+                {t(sec.category)}
               </div>
-              <div>
-                <p className="text-sm font-bold truncate w-24">{user?.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize font-medium">{user?.role}</p>
+              <div className="space-y-0.5">
+                {sec.items.map((item, idx) => {
+                  const active = isActive(item.to);
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={idx}
+                      to={item.to}
+                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group ${
+                        active 
+                          ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-semibold' 
+                          : item.highlight
+                            ? 'text-sky-700 dark:text-sky-400 hover:bg-sky-50/60 dark:hover:bg-sky-950/30'
+                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3 truncate">
+                        <Icon 
+                          size={18} 
+                          className={`shrink-0 transition-colors ${
+                            active 
+                              ? 'text-sky-700 dark:text-sky-300' 
+                              : item.highlight
+                                ? 'text-sky-600 animate-pulse'
+                                : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300'
+                          }`} 
+                        />
+                        <span className="truncate">{t(item.label)}</span>
+                      </div>
+                      {item.badge && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50">
+                          {t(item.badge)}
+                        </span>
+                      )}
+                      {item.highlight && !item.badge && (
+                        <Sparkles size={13} className="text-indigo-500" />
+                      )}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
-            <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-white/50 dark:hover:bg-white/10 transition-transform hover:rotate-12">
-              {theme === 'dark' ? <Sun size={18} className="text-yellow-400" /> : <Moon size={18} className="text-indigo-600" />}
+          ))}
+        </nav>
+
+        {/* User Footer Profile */}
+        <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 mb-2">
+            <div className="flex items-center space-x-2.5 truncate">
+              <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                {user?.name?.charAt(0).toUpperCase() || 'U'}
+              </div>
+              <div className="truncate">
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{user?.name || 'User'}</p>
+                <p className="text-[10px] text-slate-400 capitalize font-medium leading-none">{user?.role || 'Staff'}</p>
+              </div>
+            </div>
+            <button 
+              onClick={toggleTheme} 
+              aria-label="Toggle theme"
+              className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            >
+              {theme === 'dark' ? <Sun size={15} className="text-amber-400" /> : <Moon size={15} className="text-slate-600" />}
             </button>
           </div>
           <button 
             onClick={logout}
-            className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl transition-all duration-300 hover:shadow-sm"
+            className="w-full flex items-center justify-center space-x-2 px-3 py-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-colors"
           >
-            <LogOut size={16} />
-            <span>Logout</span>
+            <LogOut size={14} />
+            <span>{t('Sign Out')}</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        <header className="h-16 glass border-b border-white/20 dark:border-white/5 flex items-center justify-between px-8 z-10 sticky top-0">
-          <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-500 dark:from-white dark:to-gray-400">
-            Welcome back, {user?.name}
-          </h2>
-          <div className="flex items-center gap-4">
+        {/* Top App Header */}
+        <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 z-10 sticky top-0 shadow-xs">
+          <div className="flex items-center space-x-3">
+            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+              {t(navigationSections.flatMap(s => s.items).find(i => isActive(i.to))?.label || 'Overview')}
+            </h2>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>StockFlow Cloud Active</span>
+            </div>
             <button 
               onClick={() => setIsSearchOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-xl transition-colors text-sm font-medium border border-gray-200 dark:border-gray-700"
+              className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-500 dark:text-slate-400 rounded-lg transition-colors text-xs font-medium border border-slate-200 dark:border-slate-700"
             >
-              <Search size={16} />
-              <span className="hidden sm:inline">Search...</span>
-              <kbd className="hidden sm:inline-block px-2 py-0.5 text-xs bg-gray-200 dark:bg-gray-700 rounded-md font-mono">Ctrl K</kbd>
+              <Search size={14} />
+              <span className="hidden sm:inline">{t('Search records...')}</span>
+              <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700 font-mono">Ctrl K</kbd>
             </button>
           </div>
         </header>
         
-        {/* Animated Outlet Wrapper */}
+        {/* Animated Page Content */}
         <div className="flex-1 overflow-auto p-8 relative">
           <AnimatePresence mode="wait">
             <motion.div
-              key={window.location.pathname}
-              initial={{ opacity: 0, y: 15 }}
+              key={location.pathname}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
               className="h-full"
             >
               <Outlet />

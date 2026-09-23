@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { ShoppingCart, Plus, Minus, Search, PackageSearch, Trash2, CheckCircle, ArrowLeft } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Search, PackageSearch, Trash2, CheckCircle, ArrowLeft, UserPlus, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const OrderForm = () => {
   const navigate = useNavigate();
@@ -14,6 +14,8 @@ const OrderForm = () => {
   const [cart, setCart] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({ name: '', email: '', phone: '', address: '' });
 
   useEffect(() => {
     // Fetch products and customers
@@ -113,6 +115,27 @@ const OrderForm = () => {
     }
   };
 
+  const handleCreateCustomer = async (e) => {
+    e.preventDefault();
+    if (!newCustomer.name || !newCustomer.phone) {
+      return toast.error('Name and Phone are required');
+    }
+    setLoading(true);
+    try {
+      const res = await api.post('/customers', newCustomer);
+      const created = res.data.data;
+      setCustomers([...customers, created]);
+      setSelectedCustomer(created._id);
+      setShowCustomerModal(false);
+      setNewCustomer({ name: '', email: '', phone: '', address: '' });
+      toast.success('Customer created successfully');
+    } catch (error) {
+      toast.error('Failed to create customer');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredProducts = products.filter(p => 
     p.productName.toLowerCase().includes(searchTerm.toLowerCase()) || 
     p.sku.toLowerCase().includes(searchTerm.toLowerCase())
@@ -156,7 +179,12 @@ const OrderForm = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filteredProducts.map(product => (
                   <div key={product._id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-primary/50 hover:shadow-md transition-all group flex flex-col">
-                    <h3 className="font-bold text-gray-900 dark:text-white truncate">{product.productName}</h3>
+                    {product.productImage && (
+                      <div className="w-full h-32 mb-3 rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                        <img src={product.productImage} alt={product.productName} className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal" onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1586769852044-692d6e3703f0?q=80&w=400&auto=format&fit=crop'; }} />
+                      </div>
+                    )}
+                    <h3 className="font-bold text-gray-900 dark:text-white line-clamp-1" title={product.productName}>{product.productName}</h3>
                     <p className="text-xs text-gray-500 font-mono mb-2">{product.sku}</p>
                     <div className="flex justify-between items-end mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
                       <div>
@@ -186,7 +214,15 @@ const OrderForm = () => {
           </div>
 
           <div className="mb-6 space-y-2">
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Select Customer</label>
+            <div className="flex justify-between items-center">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Select Customer</label>
+              <button 
+                onClick={() => setShowCustomerModal(true)}
+                className="text-xs text-primary font-medium flex items-center gap-1 hover:text-primary-600 transition-colors"
+              >
+                <UserPlus size={14} /> Add New
+              </button>
+            </div>
             <select 
               className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-primary text-sm transition-colors"
               value={selectedCustomer}
@@ -260,6 +296,57 @@ const OrderForm = () => {
           </div>
         </div>
       </div>
+
+      {/* Create Customer Modal */}
+      <AnimatePresence>
+        {showCustomerModal && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-700"
+            >
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/50">
+                <h3 className="font-bold text-lg flex items-center gap-2"><UserPlus size={20} className="text-primary"/> New Customer</h3>
+                <button onClick={() => setShowCustomerModal(false)} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+              <form onSubmit={handleCreateCustomer} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Full Name *</label>
+                  <input type="text" required className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 outline-none focus:border-primary transition-colors"
+                    value={newCustomer.name} onChange={e => setNewCustomer({...newCustomer, name: e.target.value})} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Phone Number *</label>
+                  <input type="text" required className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 outline-none focus:border-primary transition-colors"
+                    value={newCustomer.phone} onChange={e => setNewCustomer({...newCustomer, phone: e.target.value})} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Email Address</label>
+                  <input type="email" className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 outline-none focus:border-primary transition-colors"
+                    value={newCustomer.email} onChange={e => setNewCustomer({...newCustomer, email: e.target.value})} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Shipping Address</label>
+                  <textarea rows="2" className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 outline-none focus:border-primary transition-colors resize-none"
+                    value={newCustomer.address} onChange={e => setNewCustomer({...newCustomer, address: e.target.value})}></textarea>
+                </div>
+                
+                <div className="pt-4 flex gap-3">
+                  <button type="button" onClick={() => setShowCustomerModal(false)} className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium">Cancel</button>
+                  <button type="submit" disabled={loading} className="flex-1 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-600 text-white transition-colors font-medium shadow-lg shadow-primary/30 flex items-center justify-center">
+                    {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Create Customer'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

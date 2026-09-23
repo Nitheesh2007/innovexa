@@ -1,6 +1,6 @@
 exports.getAll = (Model) => async (req, res, next) => {
   try {
-    const docs = await Model.find();
+    const docs = await Model.find().select('-password');
     res.status(200).json({ success: true, data: docs });
   } catch (error) {
     next(error);
@@ -9,7 +9,7 @@ exports.getAll = (Model) => async (req, res, next) => {
 
 exports.getOne = (Model) => async (req, res, next) => {
   try {
-    const doc = await Model.findById(req.params.id);
+    const doc = await Model.findById(req.params.id).select('-password');
     if (!doc) {
       return res.status(404).json({ success: false, message: 'Document not found' });
     }
@@ -22,7 +22,9 @@ exports.getOne = (Model) => async (req, res, next) => {
 exports.createOne = (Model) => async (req, res, next) => {
   try {
     const doc = await Model.create(req.body);
-    res.status(201).json({ success: true, data: doc, message: 'Created successfully' });
+    const docObj = doc.toObject ? doc.toObject() : { ...doc };
+    delete docObj.password;
+    res.status(201).json({ success: true, data: docObj, message: 'Created successfully' });
   } catch (error) {
     next(error);
   }
@@ -33,7 +35,7 @@ exports.updateOne = (Model) => async (req, res, next) => {
     const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true
-    });
+    }).select('-password');
     if (!doc) {
       return res.status(404).json({ success: false, message: 'Document not found' });
     }

@@ -19,7 +19,10 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
+          setUser(null);
         }
+      } else {
+        setUser(null);
       }
       setLoading(false);
     };
@@ -34,10 +37,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const adminLogin = async (email, password) => {
-    const res = await api.post('/auth/admin-login', { email, password });
-    localStorage.setItem('token', res.data.data.token);
-    setUser(res.data.data);
-    return res.data;
+    return login(email, password);
   };
 
   const register = async (userData) => {
@@ -81,8 +81,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const mockSocialLogin = async (provider) => {
+    setLoading(true);
+    try {
+      const res = await api.post('/auth/mock-social', { provider });
+      localStorage.setItem('token', res.data.data.token);
+      setUser(res.data.data);
+      return { success: true, data: res.data };
+    } catch (error) {
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, adminLogin, register, googleLogin, githubLogin, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, adminLogin, register, googleLogin, githubLogin, mockSocialLogin, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

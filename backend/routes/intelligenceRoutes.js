@@ -4,5 +4,6 @@ const { getInventoryIntelligence } = require('../controllers/intelligenceControl
 const { protect } = require('../middleware/auth');
 
 router.get('/', protect, getInventoryIntelligence);
+router.get('/stock-health', protect, getInventoryIntelligence);
 
 module.exports = router;

@@ -1,14 +1,13 @@
 const { askAI } = require('../services/aiProvider');
 const AIChat = require('../models/AIChat');
-const Product = require('../models/Product');
+const { buildDynamicContext } = require('../services/aiContextBuilder');
 
 exports.chat = async (req, res, next) => {
   try {
     const { message } = req.body;
 
-    // Build context
-    const products = await Product.find().select('productName currentStock status purchasePrice sellingPrice');
-    const context = { products };
+    // Build intelligent context dynamically based on the user's message
+    const context = await buildDynamicContext(message);
 
     const aiResult = await askAI(message, context);
 
@@ -20,7 +19,11 @@ exports.chat = async (req, res, next) => {
       provider: aiResult.provider
     });
 
-    res.status(200).json({ success: true, data: chat });
+    res.status(200).json({ 
+      success: true, 
+      data: chat, 
+      suggestions: aiResult.suggestions || [] 
+    });
   } catch (error) {
     next(error);
   }

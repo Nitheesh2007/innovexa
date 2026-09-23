@@ -26,7 +26,7 @@ const Register = () => {
     try {
       setLoading(true);
       await registerUser(data);
-      toast.success('Account created successfully!');
+      toast.success('Account created successfully! Welcome to StockFlow.');
       navigate('/dashboard');
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message || 'Authentication error';
@@ -38,53 +38,68 @@ const Register = () => {
 
   return (
     <div className="flex flex-col h-full w-full">
-      <div className="mb-6 text-center lg:text-left">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Create an account</h2>
-        <p className="text-gray-500 dark:text-gray-400">Sign up to start managing your inventory.</p>
+      <div className="mb-6">
+        <h2 className="font-display text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+          Start for Free
+        </h2>
+        <p className="text-sm text-slate-500 mt-1">
+          No credit card required. 25 products free forever.
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Full Name</label>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+            Full Name
+          </label>
           <input 
             {...register('name')}
             type="text" 
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all shadow-sm"
-            placeholder="John Doe"
+            className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800/80 border border-hairline rounded-lg focus:ring-2 focus:ring-sky-600/30 focus:border-sky-600 outline-none transition-colors text-sm text-slate-900 dark:text-white"
+            placeholder="Jane Doe"
           />
-          {errors.name && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.name.message}</p>}
+          {errors.name && <p className="text-rose-500 text-xs mt-1">{errors.name.message}</p>}
         </div>
+
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Email address</label>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+            Work Email
+          </label>
           <input 
             {...register('email')}
             type="email" 
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all shadow-sm"
-            placeholder="admin@stockflow.com"
+            className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800/80 border border-hairline rounded-lg focus:ring-2 focus:ring-sky-600/30 focus:border-sky-600 outline-none transition-colors text-sm text-slate-900 dark:text-white"
+            placeholder="jane@company.com"
           />
-          {errors.email && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.email.message}</p>}
+          {errors.email && <p className="text-rose-500 text-xs mt-1">{errors.email.message}</p>}
         </div>
+
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+            Password (min. 6 characters)
+          </label>
           <input 
             {...register('password')}
             type="password" 
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all shadow-sm"
+            className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800/80 border border-hairline rounded-lg focus:ring-2 focus:ring-sky-600/30 focus:border-sky-600 outline-none transition-colors text-sm text-slate-900 dark:text-white"
             placeholder="••••••••"
           />
-          {errors.password && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.password.message}</p>}
+          {errors.password && <p className="text-rose-500 text-xs mt-1">{errors.password.message}</p>}
         </div>
 
         <button 
           type="submit" 
           disabled={loading}
-          className="w-full bg-primary hover:bg-primary-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary-500/30 flex justify-center items-center gap-2 mt-2 hover:-translate-y-0.5"
+          className="w-full bg-sky-700 hover:bg-sky-800 text-white font-semibold py-2.5 rounded-lg transition-colors shadow-xs flex justify-center items-center gap-2 text-sm mt-2"
         >
-          {loading ? <Loader2 className="animate-spin" size={20} /> : 'Create Account'}
+          {loading ? <><Loader2 className="animate-spin" size={16} /> Creating Account...</> : 'Create Free Account'}
         </button>
 
-        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-          Already have an account? <Link to="/login" className="text-primary hover:text-primary-600 font-semibold transition-colors">Sign in here</Link>
+        <p className="text-center text-xs text-slate-500 mt-4">
+          Already have an account?{' '}
+          <Link to="/login" className="text-sky-700 dark:text-sky-400 font-semibold hover:underline">
+            Sign in
+          </Link>
         </p>
       </form>
     </div>

@@ -51,6 +51,7 @@ const AIAssistant = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingState, setLoadingState] = useState('Analyzing data...');
+  const [currentSuggestions, setCurrentSuggestions] = useState([]);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -60,7 +61,7 @@ const AIAssistant = () => {
   const fetchHistory = async () => {
     try {
       const res = await api.get('/ai/history');
-      const hist = res.data.data;
+      const hist = Array.isArray(res.data?.data) ? res.data.data : [];
       const formatted = [];
       hist.forEach(chat => {
         formatted.push({ text: chat.message, sender: 'user' });
@@ -68,7 +69,7 @@ const AIAssistant = () => {
       });
       setMessages(formatted);
     } catch (error) {
-      toast.error('Failed to load chat history');
+      console.warn('Chat history not loaded:', error);
     }
   };
 
@@ -82,11 +83,9 @@ const AIAssistant = () => {
 
   const loadingStates = ['Accessing database...', 'Analyzing inventory metrics...', 'Running prediction models...', 'Formulating response...'];
 
-  const sendMessage = async (e) => {
-    e.preventDefault();
-    if (!input.trim()) return;
+  const triggerMessage = async (userMessage) => {
+    if (!userMessage.trim()) return;
 
-    const userMessage = input.trim();
     setInput('');
     setMessages(prev => [...prev, { text: userMessage, sender: 'user' }]);
     setLoading(true);
@@ -101,15 +100,23 @@ const AIAssistant = () => {
     try {
       const res = await api.post('/ai/chat', { message: userMessage });
       const { response, provider } = res.data.data;
+      const suggestions = res.data.suggestions || [];
       clearInterval(stateInterval);
       setMessages(prev => [...prev, { text: response, sender: 'ai', provider, isHistory: false }]);
+      setCurrentSuggestions(suggestions);
     } catch (error) {
       clearInterval(stateInterval);
       toast.error('AI Failed to respond');
       setMessages(prev => [...prev, { text: 'Sorry, I encountered an error checking the database.', sender: 'ai', provider: 'error', isHistory: false }]);
+      setCurrentSuggestions([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const sendMessage = (e) => {
+    e.preventDefault();
+    triggerMessage(input);
   };
 
   const messageVariants = {
@@ -122,19 +129,81 @@ const AIAssistant = () => {
       
       {/* Side Navigation Panel */}
       <div className="hidden lg:flex w-64 flex-col gap-4">
-        <div className="glass dark:bg-gray-800/80 p-5 rounded-2xl shadow-lg shadow-blue-900/5 border border-white/20 dark:border-white/5 relative overflow-hidden">
+        <div className="glass dark:bg-gray-800/80 p-5 rounded-2xl shadow-lg shadow-blue-900/5 border border-white/20 dark:border-white/5 relative overflow-hidden flex flex-col h-1/2">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
           <h3 className="font-bold flex items-center gap-2 mb-4 relative z-10"><Sparkles size={18} className="text-primary-500"/> Copilot Actions</h3>
-          <div className="space-y-2 relative z-10">
-            <button onClick={() => setInput("Generate a comprehensive summary of our low stock items and suggest purchase orders.")} className="w-full text-left p-3 text-sm font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-xl transition-all border border-transparent hover:border-primary-200 dark:hover:border-primary-800">
-              ⚡ Comprehensive Report
+          <div className="space-y-2 relative z-10 overflow-y-auto custom-scrollbar flex-1 pr-2">
+            
+            <p className="text-[10px] uppercase font-bold text-gray-400 mt-2 mb-1">Inventory & Stock</p>
+            <button onClick={() => triggerMessage("Identify all products currently out of stock.")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              🔴 Out of Stock Items
             </button>
-            <button onClick={() => setInput("Identify the most profitable product category.")} className="w-full text-left p-3 text-sm font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-xl transition-all border border-transparent hover:border-primary-200 dark:hover:border-primary-800">
-              💰 Profitability Analysis
+            <button onClick={() => triggerMessage("Generate a comprehensive summary of our low stock items and suggest purchase orders.")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              ⚡ Reorder Report
             </button>
-            <button onClick={() => setInput("What was our top selling product last week?")} className="w-full text-left p-3 text-sm font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-xl transition-all border border-transparent hover:border-primary-200 dark:hover:border-primary-800">
+            <button onClick={() => triggerMessage("Identify our dead stock (products that haven't sold in 90 days).")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              💀 Dead Stock Analysis
+            </button>
+            <button onClick={() => triggerMessage("Which products are currently overstocked?")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              📦 Overstock Warning
+            </button>
+            <button onClick={() => triggerMessage("What is the total value of our current inventory?")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              💎 Inventory Valuation
+            </button>
+
+            <p className="text-[10px] uppercase font-bold text-gray-400 mt-4 mb-1">Sales & Financials</p>
+            <button onClick={() => triggerMessage("Summarize today's sales and revenue.")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              📊 Today's Sales
+            </button>
+            <button onClick={() => triggerMessage("Identify the most profitable product category.")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              💰 Top Categories
+            </button>
+            <button onClick={() => triggerMessage("What was our top selling product last week?")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
               📈 Sales Trends
             </button>
+            <button onClick={() => triggerMessage("Which products have the lowest profit margins?")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              📉 Low Margin Alert
+            </button>
+            <button onClick={() => triggerMessage("What is our total gross profit for this month so far?")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              💵 Monthly Profit
+            </button>
+            
+            <p className="text-[10px] uppercase font-bold text-gray-400 mt-4 mb-1">Customers & Suppliers</p>
+            <button onClick={() => triggerMessage("Who are our top 5 most valuable customers?")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              ⭐ Top Customers
+            </button>
+            <button onClick={() => triggerMessage("Which supplier has fulfilled the most orders for us?")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              🚚 Top Supplier
+            </button>
+            <button onClick={() => triggerMessage("Show me all customers with pending outstanding payments.")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              ⚠️ Outstanding Debtors
+            </button>
+            <button onClick={() => triggerMessage("Compare prices between suppliers for our most restocked item.")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              ⚖️ Supplier Compare
+            </button>
+
+            <p className="text-[10px] uppercase font-bold text-gray-400 mt-4 mb-1">AI Machine Learning</p>
+            <button onClick={() => triggerMessage("Forecast demand for the next 30 days based on recent sales velocity.")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              🔮 Demand Forecast
+            </button>
+            <button onClick={() => triggerMessage("Detect any anomalies or unusual inventory movements in the last week.")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              🕵️ Anomaly Detection
+            </button>
+            <button onClick={() => triggerMessage("Classify all products into fast-moving, slow-moving, and dead-stock categories.")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              🏷️ Product Classification
+            </button>
+            <button onClick={() => triggerMessage("Recommend optimal restock quantities for all low stock items.")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              🤖 Smart Restock
+            </button>
+            
+            <p className="text-[10px] uppercase font-bold text-gray-400 mt-4 mb-1">System Audit</p>
+            <button onClick={() => triggerMessage("Summarize all administrative actions taken in the system today.")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              📋 Daily Audit Log
+            </button>
+            <button onClick={() => triggerMessage("Show me recent price changes or manual stock adjustments.")} className="w-full text-left p-2 text-xs font-medium bg-white/50 dark:bg-gray-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-all border border-transparent hover:border-primary-200">
+              📝 Adjustment History
+            </button>
+
           </div>
         </div>
 
@@ -188,11 +257,11 @@ const AIAssistant = () => {
               <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-10 text-lg">Ask me to analyze your inventory, predict shortages, or generate financial reports.</p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
-                <button onClick={() => setInput("Show me all products that are currently critically low in stock.")} className="p-4 bg-white/60 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-700 rounded-2xl border border-gray-200/50 dark:border-gray-700 text-sm font-medium transition-all shadow-sm hover:shadow-md text-left flex gap-3 group">
+                <button onClick={() => triggerMessage("Show me all products that are currently critically low in stock.")} className="p-4 bg-white/60 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-700 rounded-2xl border border-gray-200/50 dark:border-gray-700 text-sm font-medium transition-all shadow-sm hover:shadow-md text-left flex gap-3 group">
                   <span className="text-xl group-hover:scale-110 transition-transform">⚠️</span>
                   <span>Show me all products that are currently critically low in stock.</span>
                 </button>
-                <button onClick={() => setInput("Calculate the total financial value of all active inventory.")} className="p-4 bg-white/60 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-700 rounded-2xl border border-gray-200/50 dark:border-gray-700 text-sm font-medium transition-all shadow-sm hover:shadow-md text-left flex gap-3 group">
+                <button onClick={() => triggerMessage("Calculate the total financial value of all active inventory.")} className="p-4 bg-white/60 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-700 rounded-2xl border border-gray-200/50 dark:border-gray-700 text-sm font-medium transition-all shadow-sm hover:shadow-md text-left flex gap-3 group">
                   <span className="text-xl group-hover:scale-110 transition-transform">💰</span>
                   <span>Calculate the total financial value of all active inventory.</span>
                 </button>
@@ -258,13 +327,32 @@ const AIAssistant = () => {
                 </div>
               </motion.div>
             )}
+            
+            {/* Suggestions */}
+            {!loading && currentSuggestions.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+                className="flex flex-wrap gap-2 pl-12 sm:pl-16 pt-2"
+              >
+                {currentSuggestions.map((suggestion, idx) => (
+                  <button 
+                    key={idx}
+                    onClick={() => triggerMessage(suggestion)}
+                    className="px-4 py-2 bg-white/60 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-700 rounded-full border border-primary-200 dark:border-gray-700 text-xs sm:text-sm text-primary-700 dark:text-primary-400 font-medium transition-all shadow-sm hover:shadow hover:scale-105 flex gap-2 items-center"
+                  >
+                    <Sparkles size={14} />
+                    {suggestion}
+                  </button>
+                ))}
+              </motion.div>
+            )}
           </AnimatePresence>
           <div ref={messagesEndRef} />
         </div>
 
         {/* Input Area */}
         <div className="p-4 sm:p-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl border-t border-white/20 dark:border-white/5 z-20">
-          <form onSubmit={sendMessage} className="relative group max-w-4xl mx-auto">
+          <form id="ai-chat-form" onSubmit={sendMessage} className="relative group max-w-4xl mx-auto">
             <input 
               type="text" 
               value={input}

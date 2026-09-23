@@ -2,14 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { intelligenceService } from '../services/apiServices';
 import { Brain, TrendingUp, AlertTriangle, CheckCircle, Activity, PackageX } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getMatchingProductImage } from '../utils/productImageMatcher';
 
 const Intelligence = () => {
   const [analysis, setAnalysis] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [insufficientData, setInsufficientData] = useState(false);
 
   useEffect(() => {
     intelligenceService.getAnalysis()
-      .then(res => setAnalysis(res.data.data))
+      .then(res => {
+        setAnalysis(res.data.data);
+        setInsufficientData(res.data.insufficientData);
+      })
       .catch(() => toast.error('Failed to load intelligence data'))
       .finally(() => setLoading(false));
   }, []);
@@ -27,6 +32,16 @@ const Intelligence = () => {
           <p className="text-gray-500 text-sm">Powered by Scikit-learn Machine Learning Models</p>
         </div>
       </div>
+
+      {insufficientData && (
+        <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4 flex items-start gap-3 text-orange-800 dark:text-orange-300">
+          <AlertTriangle size={20} className="shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-bold text-sm">Insufficient historical data for reliable prediction</h3>
+            <p className="text-xs mt-1 opacity-90">Our Scikit-learn Machine Learning model requires at least 4 months of sales history across your inventory to detect seasonal trends and make accurate demand forecasts. Predictions have been paused.</p>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
@@ -47,7 +62,18 @@ const Intelligence = () => {
               ) : (
                 analysis.map(item => (
                   <tr key={item.productId} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                    <td className="px-6 py-4 font-medium">{item.productName}</td>
+                    <td className="px-6 py-4 font-medium flex items-center gap-3">
+                      <img 
+                        src={getMatchingProductImage(item.productName)} 
+                        alt={item.productName}
+                        className="w-8 h-8 rounded-lg object-cover border border-gray-100 dark:border-gray-700 shrink-0 bg-gray-50 dark:bg-gray-800"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = getMatchingProductImage(item.productName);
+                        }}
+                      />
+                      <span>{item.productName}</span>
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 max-w-[100px]">

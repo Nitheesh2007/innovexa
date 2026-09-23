@@ -1,40 +1,87 @@
-# StockFlow - Smart AI-Powered Inventory Management System
+# StockFlow Enterprise ERP & Intelligent Inventory Suite
 
-StockFlow is a production-ready, full-stack inventory management system featuring advanced real-time ML integration, intelligent fallbacks, and a beautifully unified UI.
+StockFlow is an enterprise-grade inventory, point of sale (POS), and supply chain management platform with embedded AI copilot capabilities, real-time ML demand forecasting, and robust financial tracking.
 
-## Getting Started (Single Command Setup)
+---
 
-StockFlow has been architected to run completely from a single command, automatically launching the frontend, the Node.js API, and managing the Python ML service orchestrations under one roof.
+## 🏛️ System Architecture
+
+- **Frontend**: Modern React 19 SPA powered by Vite, Tailwind CSS, Framer Motion, and Recharts.
+- **Backend**: Express.js REST API with modular routers, JWT authentication, role-based access control (RBAC), and MongoDB/Mongoose.
+- **AI & Intelligence**: Hybrid AI copilot (Gemini / OpenAI / rule-based fallback) + Scikit-learn FastAPI ML microservice for demand forecasting.
+- **Security & Compliance**: Helmet protection, audit logging, rate limiting, and Bcrypt password hashing.
+
+---
+
+## 🚀 Navigation & Core Modules
+
+### 1. Operations
+- **Dashboard**: Real-time KPI cards, sales trends, low stock warnings, and recent transaction activities.
+- **POS Terminal**: Fast point-of-sale register with live barcode entry, customer assignment, and instant receipt billing.
+- **Products Catalog**: Complete SKU management, image assets, pricing margins, category tags, and stock thresholds.
+- **Inventory Ledger**: Real-time ledger of all stock-in and stock-out adjustments with audit references.
+- **Sales & Orders**: Customer purchase orders, delivery status tracking, and fulfillment workflow.
+- **Invoices & Billing**: Automated invoice generation, PDF exports, payment status (PAID/UNPAID), and receipt tracking.
+- **Returns Management**: Customer and supplier return RMA tracking with automatic stock restoration.
+- **Suppliers & Vendors**: Vendor directory, lead-time tracking, and procurement links.
+
+### 2. Intelligence & Finance
+- **StockFlow AI Copilot**: Natural language business analyst querying real-time inventory valuations, top sellers, and margin health.
+- **ML Demand Forecast**: Predictive inventory modeling and stockout risk analysis.
+- **Financial Ledger**: Cash flow analysis, expenses tracking, gross vs. net profit margins.
+- **Reports & Analytics**: Comprehensive valuation, sales performance, and audit export reports.
+
+### 3. Administration
+- **Barcode / QR Scanner**: In-browser camera scanner for instant SKU lookup and inventory verification.
+- **Staff & Access Control**: User roles (`admin`, `manager`, `user`) and permission management.
+- **Audit & Compliance**: Centralized activity log recording all user transactions, logins, and data modifications.
+
+---
+
+## 🛠️ Quick Start
 
 ### 1. Requirements
-- **Node.js**: v18+ 
-- **Python** (Optional, for advanced ML): 3.9+ with `pip`
+- **Node.js**: v18+
+- **Python** (Optional, for advanced ML microservice): v3.9+ with `uvicorn` and `scikit-learn`
 
-### 2. Configuration
-Copy the `.env.example` templates to `.env` in the respective folders:
-- `backend/.env` (Requires `JWT_SECRET=your_secret_key`)
-- `frontend/.env` (Requires `VITE_API_URL=/api`)
-- *Optional:* Configure `MONGODB_URI` inside `backend/.env` for cloud persistence. (If left blank or unavailable, StockFlow securely falls back to an isolated in-memory database).
-
-### 3. Installation & Run
-From the root directory, simply run:
+### 2. Installation
 ```bash
-npm install        # Install root orchestrator dependencies
+# Backend dependencies
 cd backend && npm install
-cd ../frontend && npm install
-cd ..
 
-# Build UI and Start the entire application suite
-npm run build
-npm run start
+# Frontend dependencies
+cd ../frontend && npm install
+
+# Return to root
+cd ..
 ```
 
-### Accessing the App
-Open your browser and navigate to:
-**http://localhost:8072**
+### 3. Running the Application
+```bash
+# Launch unified ecosystem (Frontend build + Backend API on port 5000)
+node start.js
 
-Everything—from the React Frontend, OCR image uploads, AI Assistant generation, to the internal Python FastAPI integrations—will function entirely through this single localhost origin without CORS issues.
+# Or start backend directly in development mode:
+cd backend && npm run dev
+```
 
-## Default Credentials
-- **Email:** `admin@stockflow.com`
-- **Password:** `Admin@123`
+Open your browser at: **http://localhost:5000**
+
+---
+
+## 🔑 Default Credentials
+
+| Role | Email | Password |
+|---|---|---|
+| **Administrator** | `admin@stockflow.com` | `Admin@12345` |
+| **Staff User** | `user@stockflow.com` | `User@12345` |
+
+---
+
+## 📦 Maintenance & Data Scripts
+
+All database maintenance scripts are located in `backend/scripts/`:
+- `npm run seed`: Reset and seed core catalog, warehouses, and test accounts.
+- `npm run seed:massive`: Generate demo catalog across 20 retail categories.
+- `npm run seed:images`: Populate catalog with high-resolution imagery.
+- `npm run test:integration`: Execute automated end-to-end API test suite.

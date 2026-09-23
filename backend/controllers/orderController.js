@@ -49,10 +49,13 @@ exports.createOrder = async (req, res, next) => {
         // Create transaction record
         await InventoryTransaction.create({
           product: product._id,
-          type: 'OUT',
+          warehouse: product.warehouse,
+          transactionType: 'Stock Out',
           quantity: item.quantity,
-          reference: `Order ${orderNumber}`,
-          performedBy: req.user ? req.user.id : null,
+          previousStock: product.currentStock + item.quantity,
+          newStock: product.currentStock,
+          user: req.user ? req.user.id : (await require('../models/User').findOne({ role: 'admin' }))._id,
+          referenceNumber: `Order ${orderNumber}`,
         });
       }
     }

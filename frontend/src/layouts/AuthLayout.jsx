@@ -1,94 +1,86 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Package, TrendingUp, Bot, ShieldCheck, Sun, Moon } from 'lucide-react';
+import { Receipt, Building2, Bell, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { StockFlowLogo } from '../pages/LandingPage';
 
 const AuthLayout = () => {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 transition-colors duration-500 overflow-hidden text-gray-900 dark:text-gray-100 relative">
-
-      {/* Left Showcase Side (Hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 overflow-hidden">
-        {/* Abstract Background Orbs */}
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-500/20 dark:bg-blue-600/10 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-indigo-500/20 dark:bg-indigo-600/10 rounded-full blur-[120px] translate-x-1/3 translate-y-1/3"></div>
-
-        <div className="relative z-10">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <h1 className="text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-indigo-600 dark:from-primary-400 dark:to-indigo-400 tracking-tight">StockFlow</h1>
-            <p className="mt-4 text-xl text-gray-600 dark:text-gray-300 font-light max-w-md">The intelligent, enterprise-grade inventory management system for modern businesses.</p>
-          </motion.div>
-        </div>
-
-        <div className="relative z-10 grid gap-6 max-w-lg mt-12">
-          <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="glass dark:bg-slate-800/50 p-6 rounded-2xl flex items-start gap-4">
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-xl"><Package size={24} /></div>
-            <div>
-              <h3 className="font-bold text-lg">Smart Inventory</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Real-time tracking, ledger auditing, and automated low-stock alerts.</p>
-            </div>
-          </motion.div>
-          
-          <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.4 }} className="glass dark:bg-slate-800/50 p-6 rounded-2xl flex items-start gap-4 ml-8">
-            <div className="p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-xl"><Bot size={24} /></div>
-            <div>
-              <h3 className="font-bold text-lg">AI & Machine Learning</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Predictive analytics and a conversational AI assistant for instant insights.</p>
-            </div>
-          </motion.div>
-          
-          <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.6 }} className="glass dark:bg-slate-800/50 p-6 rounded-2xl flex items-start gap-4">
-            <div className="p-3 bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 rounded-xl"><TrendingUp size={24} /></div>
-            <div>
-              <h3 className="font-bold text-lg">Financial Analytics</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Beautiful dashboards tracking revenue trends and inventory asset value.</p>
-            </div>
-          </motion.div>
-        </div>
-        
-        <div className="relative z-10 text-sm text-gray-500 dark:text-gray-400 font-medium">
-          &copy; {new Date().getFullYear()} StockFlow Systems Inc.
+    <div className="min-h-screen flex bg-surface-muted dark:bg-slate-950 transition-colors duration-300 overflow-hidden text-slate-900 dark:text-slate-100 font-sans relative">
+      
+      {/* Top Header Bar */}
+      <div className="absolute top-6 left-6 right-6 z-50 flex items-center justify-between">
+        <Link to="/">
+          <StockFlowLogo />
+        </Link>
+        <div className="flex items-center gap-2.5">
+          <button 
+            onClick={toggleTheme}
+            type="button"
+            className="p-2.5 bg-white dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-xs transition-colors border border-hairline"
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-slate-600" />}
+          </button>
         </div>
       </div>
 
-      {/* Right Login Side */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 lg:p-12 relative z-20 overflow-hidden">
-        
-        {/* Subtle right-side background elements */}
-        <motion.div 
-          animate={{ y: [-20, 20, -20], rotate: [0, 10, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/4 right-1/4 w-32 h-32 bg-primary-400/20 rounded-full blur-[40px] pointer-events-none hidden lg:block"
-        />
-        <motion.div 
-          animate={{ y: [20, -20, 20], rotate: [0, -10, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-1/4 left-1/4 w-40 h-40 bg-indigo-400/20 rounded-full blur-[50px] pointer-events-none hidden lg:block"
-        />
+      {/* Left Showcase Side (Hidden on mobile) */}
+      <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-16 pt-28 border-r border-hairline bg-white dark:bg-slate-900">
+        <div>
+          <h2 className="font-display text-4xl font-bold tracking-[-0.02em] text-slate-900 dark:text-white max-w-md leading-tight">
+            Simple inventory management for small businesses.
+          </h2>
+          <p className="mt-4 text-base text-slate-600 dark:text-slate-400 max-w-md">
+            Track stock across multiple warehouses, scan barcodes with your phone, and automate reorder alerts — without enterprise pricing.
+          </p>
 
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.5, type: "spring", stiffness: 200, damping: 20 }}
-          className="w-full max-w-[420px] bg-white/80 dark:bg-gray-800/90 backdrop-blur-xl p-8 sm:p-10 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-white/60 dark:border-white/10 relative z-10"
-        >
-          <div className="mb-8 text-center lg:hidden">
-            <motion.div 
-              initial={{ scale: 0.9 }} 
-              animate={{ scale: 1 }} 
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary-500 to-indigo-600 mb-4 shadow-lg"
-            >
-              <Package className="text-white w-8 h-8" />
-            </motion.div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-indigo-600 dark:from-primary-400 dark:to-indigo-400 tracking-tight mb-2">StockFlow</h1>
-            <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">Manage Your Inventory Smarter</p>
+          <div className="mt-12 space-y-6 max-w-md">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0">
+                <Building2 size={20} />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Multi-Location Tracking</h3>
+                <p className="text-xs text-slate-500 mt-1">Real-time inventory levels across every warehouse and retail store.</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0">
+                <Receipt size={20} />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Fast POS & Instant Billing</h3>
+                <p className="text-xs text-slate-500 mt-1">Speed through checkouts with automated PDF invoice generation.</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0">
+                <Bell size={20} />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Automated Low-Stock Alerts</h3>
+                <p className="text-xs text-slate-500 mt-1">Prevent stockouts with automated reorder thresholds and notifications.</p>
+              </div>
+            </div>
           </div>
+        </div>
+
+        <div className="text-xs text-slate-400 font-mono">
+          © {new Date().getFullYear()} StockFlow Systems · Free Starter Plan
+        </div>
+      </div>
+
+      {/* Right Form Card Side */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 pt-28 relative z-20">
+        <div className="w-full max-w-[420px] bg-white dark:bg-slate-900 p-8 sm:p-10 rounded-2xl border border-hairline shadow-[0_1px_3px_rgba(15,23,42,0.04),0_12px_24px_-12px_rgba(15,23,42,0.08)]">
           <Outlet />
-        </motion.div>
+        </div>
       </div>
 
     </div>

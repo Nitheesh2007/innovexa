@@ -3,7 +3,7 @@ import axios from 'axios';
 // Determine the safest base URL
 let apiBase = import.meta.env.VITE_API_URL || '/api';
 if (window.location.protocol === 'file:') {
-  apiBase = 'http://localhost:5172/api';
+  apiBase = 'http://localhost:5000/api';
 }
 
 const api = axios.create({

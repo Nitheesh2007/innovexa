@@ -1,0 +1,10 @@
+const fs = require('fs');
+const path = require('path');
+const assets = fs.readdirSync('frontend/dist/assets');
+const js = assets.find(f => f.endsWith('.js'));
+const content = fs.readFileSync(path.join('frontend/dist/assets', js), 'utf8');
+console.log('JS Bundle:', js);
+console.log('Includes row.name?:', content.includes('row.name'));
+console.log('Includes Sony WH-1000XM5?:', content.includes('Sony WH-1000XM5'));
+console.log('Includes ₹29,990?:', content.includes('₹29,990'));
+console.log('Includes How It Works?:', content.includes('Get running in three steps'));

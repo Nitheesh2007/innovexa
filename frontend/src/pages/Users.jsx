@@ -3,6 +3,7 @@ import api from '../services/api';
 import { Users as UsersIcon, Plus, UserPlus, Shield, ShieldCheck, Mail, Trash2, Edit } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import DetailsModal from '../components/DetailsModal';
 
 const Users = () => {
   const { user: currentUser } = useAuth();
@@ -10,13 +11,15 @@ const Users = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'user' });
+  const [selectedUserDetails, setSelectedUserDetails] = useState(null);
 
   const fetchUsers = async () => {
     try {
       const res = await api.get('/users');
-      setUsers(res.data.data);
+      setUsers(Array.isArray(res.data?.data) ? res.data.data : []);
     } catch (error) {
-      toast.error('Failed to load users');
+      console.warn('Failed to load users:', error);
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -75,7 +78,8 @@ const Users = () => {
         {users.map((user, index) => (
           <div 
             key={user._id} 
-            className="group relative glass dark:bg-gray-800/80 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-white/20 dark:border-white/5 pb-12"
+            onClick={() => setSelectedUserDetails(user)}
+            className="group relative glass dark:bg-gray-800/80 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-white/20 dark:border-white/5 pb-12 cursor-pointer"
             style={{ animationDelay: `${index * 100}ms` }}
           >
             {/* Lanyard Graphic */}
@@ -125,7 +129,7 @@ const Users = () => {
             {currentUser?.role === 'admin' && currentUser._id !== user._id && (
               <div className="absolute bottom-0 left-0 w-full p-2 translate-y-full group-hover:translate-y-0 transition-transform bg-black/5 dark:bg-white/5 backdrop-blur-md border-t border-white/20 dark:border-white/5 flex justify-center">
                 <button 
-                  onClick={() => deleteUser(user._id)} 
+                  onClick={(e) => { e.stopPropagation(); deleteUser(user._id); }} 
                   className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg shadow-md transition-colors"
                   title="Revoke Access"
                 >
@@ -143,6 +147,44 @@ const Users = () => {
           </div>
         )}
       </div>
+
+      {selectedUserDetails && (
+        <DetailsModal
+          isOpen={!!selectedUserDetails}
+          onClose={() => setSelectedUserDetails(null)}
+          title="Staff Details"
+          icon={UsersIcon}
+          tabs={[
+            {
+              id: 'details',
+              label: 'Profile Information',
+              content: (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center text-2xl font-extrabold text-gray-700 dark:text-gray-300">
+                      {selectedUserDetails.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">{selectedUserDetails.name}</h3>
+                      <p className="text-gray-500 text-sm">{selectedUserDetails.email}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="font-bold text-gray-500 text-xs uppercase">Role</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{selectedUserDetails.role}</p>
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-500 text-xs uppercase">Joined</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{new Date(selectedUserDetails.createdAt || Date.now()).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+          ]}
+        />
+      )}
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

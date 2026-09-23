@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Info, LayoutDashboard, Package, Truck, ShoppingCart, Box, Camera, Bot, Brain, FileText, Users } from 'lucide-react';
+import { X, Info, LayoutDashboard, Package, Truck, ShoppingCart, Box, Bot, Brain, FileText, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const SystemGuideModal = ({ isOpen, onClose }) => {
@@ -18,20 +18,20 @@ const SystemGuideModal = ({ isOpen, onClose }) => {
     },
     {
       icon: Package,
-      name: "Products Catalog",
-      adminDesc: "Full access to add, edit, delete, and adjust stock for all products. View detailed financial margins per SKU.",
-      staffDesc: "View the product catalog and perform quick stock adjustments for warehouse auditing. (Deletion is restricted)."
+      name: "Product Catalog",
+      adminDesc: "Manage all product SKUs, adjust global pricing and purchase costs, and assign products to specific warehouses.",
+      staffDesc: "Browse the product catalog, check live stock availability, and view product details."
     },
     {
       icon: Truck,
-      name: "Supplier Management",
-      adminDesc: "Manage the complete directory of distributors and vendors. Add new suppliers and edit contact details.",
-      staffDesc: "View the supplier directory to know who to contact when stock is running low."
+      name: "Suppliers & Vendors",
+      adminDesc: "Manage vendor contacts, maintain supplier reliability, and track supplier-linked inventory.",
+      staffDesc: "Access vendor contact details and find supplier information for incoming shipments."
     },
     {
       icon: ShoppingCart,
       name: "Sales & Orders",
-      adminDesc: "Process Point-of-Sale orders, track the Kanban board pipeline, and generate official PDF invoices for customers.",
+      adminDesc: "Complete oversight of all outgoing sales, customer accounts, order statuses, and revenue flow.",
       staffDesc: "Process customer orders, update order statuses in the pipeline, and print receipts."
     },
     {
@@ -39,12 +39,6 @@ const SystemGuideModal = ({ isOpen, onClose }) => {
       name: "Inventory Ledger",
       adminDesc: "A strict, immutable chronological record of every single stock movement (In, Out, Adjustments) for financial auditing.",
       staffDesc: "View the history of stock movements to trace where inventory went or when it arrived."
-    },
-    {
-      icon: Camera,
-      name: "Smart Scanner",
-      adminDesc: "Use device cameras to scan barcodes for rapid stock audits and instant product lookups.",
-      staffDesc: "Use device cameras to scan barcodes to quickly find items during warehouse checks."
     },
     {
       icon: Bot,

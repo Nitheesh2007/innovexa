@@ -17,7 +17,6 @@
     "axios": "^1.20.0",
     "framer-motion": "^13.3.0",
     "html5-qrcode": "^2.3.8",
-    "jsbarcode": "^3.12.3",
     "lucide-react": "^1.46.0",
     "postcss": "^8.5.28",
     "react": "^19.2.8",

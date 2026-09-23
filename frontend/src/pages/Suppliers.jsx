@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { Truck, Plus, Mail, Phone, MapPin, Search, Edit, Trash2, Building } from 'lucide-react';
+import { Truck, Plus, Mail, Phone, MapPin, Search, Edit, Trash2, Building, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import DetailsModal from '../components/DetailsModal';
 
 const Suppliers = () => {
   const [suppliers, setSuppliers] = useState([]);
@@ -11,8 +12,21 @@ const Suppliers = () => {
   
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ name: '', companyName: '', email: '', phone: '', address: '', status: 'Active' });
+  const [formData, setFormData] = useState({ name: '', companyName: '', email: '', phone: '', address: '', rating: 5, status: 'Active' });
   const [currentId, setCurrentId] = useState(null);
+  const [selectedSupplierDetails, setSelectedSupplierDetails] = useState(null);
+  const [supplierLedger, setSupplierLedger] = useState({ data: [], currentBalance: 0 });
+  const [loadingLedger, setLoadingLedger] = useState(false);
+
+  useEffect(() => {
+    if (selectedSupplierDetails) {
+      setLoadingLedger(true);
+      api.get(`/finance/supplier-ledger/${selectedSupplierDetails._id}`)
+        .then(res => setSupplierLedger(res.data))
+        .catch(err => toast.error('Failed to load ledger'))
+        .finally(() => setLoadingLedger(false));
+    }
+  }, [selectedSupplierDetails]);
 
   const fetchSuppliers = async () => {
     try {
@@ -39,12 +53,13 @@ const Suppliers = () => {
         email: supplier.email || '',
         phone: supplier.phone || '',
         address: supplier.address || '',
+        rating: supplier.rating || 5,
         status: supplier.status || 'Active'
       });
     } else {
       setIsEditing(false);
       setCurrentId(null);
-      setFormData({ name: '', companyName: '', email: '', phone: '', address: '', status: 'Active' });
+      setFormData({ name: '', companyName: '', email: '', phone: '', address: '', rating: 5, status: 'Active' });
     }
     setShowModal(true);
   };
@@ -130,7 +145,8 @@ const Suppliers = () => {
               key={supplier._id}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="glass dark:bg-gray-800/80 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all border border-transparent hover:border-primary/20 group"
+              onClick={() => setSelectedSupplierDetails(supplier)}
+              className="glass dark:bg-gray-800/80 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all border border-transparent hover:border-primary/20 group cursor-pointer"
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-4">
@@ -140,11 +156,16 @@ const Suppliers = () => {
                   <div>
                     <h3 className="font-bold text-lg text-gray-900 dark:text-white truncate max-w-[150px]">{supplier.companyName}</h3>
                     <p className="text-sm text-gray-500">{supplier.name}</p>
+                    <div className="flex items-center gap-1 mt-1">
+                      {[1, 2, 3, 4, 5].map(star => (
+                        <Star key={star} size={14} className={star <= (supplier.rating || 5) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-600'} />
+                      ))}
+                    </div>
                   </div>
                 </div>
                 <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => handleOpenModal(supplier)} className="p-2 text-gray-500 hover:text-primary transition-colors"><Edit size={16} /></button>
-                  <button onClick={() => handleDelete(supplier._id)} className="p-2 text-gray-500 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
+                  <button onClick={(e) => { e.stopPropagation(); handleOpenModal(supplier); }} className="p-2 text-gray-500 hover:text-primary transition-colors"><Edit size={16} /></button>
+                  <button onClick={(e) => { e.stopPropagation(); handleDelete(supplier._id); }} className="p-2 text-gray-500 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
                 </div>
               </div>
               
@@ -161,16 +182,131 @@ const Suppliers = () => {
                 </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
+              <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
                 <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${
                   supplier.status === 'Active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
                 }`}>
                   {supplier.status}
                 </span>
+                <span className="text-sm font-bold text-red-500 font-mono">
+                  Owes: ₹{Number(supplier.outstandingAmount || 0).toLocaleString('en-IN')}
+                </span>
               </div>
             </motion.div>
           ))}
         </div>
+      )}
+
+      {/* Details Modal */}
+      {selectedSupplierDetails && (
+        <DetailsModal
+          isOpen={!!selectedSupplierDetails}
+          onClose={() => setSelectedSupplierDetails(null)}
+          title="Supplier Details"
+          icon={Building}
+          tabs={[
+            {
+              id: 'details',
+              label: 'Supplier Profile',
+              content: (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40 flex items-center justify-center text-3xl font-extrabold text-primary shadow-inner">
+                      {selectedSupplierDetails.companyName.charAt(0)}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">{selectedSupplierDetails.companyName}</h3>
+                      <p className="text-gray-500">{selectedSupplierDetails.name} (Contact)</p>
+                      <div className="flex items-center gap-1 mt-1">
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <Star key={star} size={14} className={star <= (selectedSupplierDetails.rating || 5) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-600'} />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="font-bold text-gray-500 text-xs uppercase">Email</p>
+                      <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                        <Mail size={14} className="text-gray-400" /> {selectedSupplierDetails.email || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-500 text-xs uppercase">Phone</p>
+                      <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                        <Phone size={14} className="text-gray-400" /> {selectedSupplierDetails.phone || 'N/A'}
+                      </p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="font-bold text-gray-500 text-xs uppercase">Address</p>
+                      <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                        <MapPin size={14} className="text-gray-400" /> {selectedSupplierDetails.address || 'N/A'}
+                      </p>
+                    </div>
+                    <div className="col-span-2 mt-2">
+                      <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${
+                        selectedSupplierDetails.status === 'Active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
+                      }`}>
+                        {selectedSupplierDetails.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )
+            },
+            {
+              id: 'ledger',
+              label: 'Ledger & History',
+              content: (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div>
+                      <h4 className="font-bold text-gray-900 dark:text-white">Current Balance</h4>
+                      <p className="text-sm text-gray-500">Total outstanding amount owed</p>
+                    </div>
+                    <div className="text-2xl font-black text-red-500 font-mono">
+                      ₹{Number(supplierLedger.currentBalance || 0).toLocaleString('en-IN')}
+                    </div>
+                  </div>
+                  {loadingLedger ? (
+                    <div className="flex justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div></div>
+                  ) : (
+                    <div className="overflow-x-auto border border-gray-100 dark:border-gray-700 rounded-xl">
+                      <table className="w-full text-left text-sm">
+                        <thead className="bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs uppercase border-b dark:border-gray-700">
+                          <tr>
+                            <th className="px-4 py-3 font-semibold">Date</th>
+                            <th className="px-4 py-3 font-semibold">Reference</th>
+                            <th className="px-4 py-3 font-semibold">Description</th>
+                            <th className="px-4 py-3 font-semibold text-right">Debit</th>
+                            <th className="px-4 py-3 font-semibold text-right">Credit</th>
+                            <th className="px-4 py-3 font-semibold text-right">Balance</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700 font-mono text-xs">
+                          {supplierLedger.data.length === 0 ? (
+                            <tr><td colSpan="6" className="text-center py-8 text-gray-500 font-sans">No transactions found</td></tr>
+                          ) : (
+                            supplierLedger.data.map((entry, idx) => (
+                              <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                <td className="px-4 py-3 font-sans">{new Date(entry.date).toLocaleDateString('en-IN')}</td>
+                                <td className="px-4 py-3 font-medium font-sans">{entry.reference}</td>
+                                <td className="px-4 py-3 text-gray-600 dark:text-gray-400 font-sans">{entry.description}</td>
+                                <td className="px-4 py-3 text-right text-red-600">{entry.debit > 0 ? `₹${entry.debit.toLocaleString('en-IN')}` : '-'}</td>
+                                <td className="px-4 py-3 text-right text-emerald-600">{entry.credit > 0 ? `₹${entry.credit.toLocaleString('en-IN')}` : '-'}</td>
+                                <td className="px-4 py-3 text-right font-bold">₹{entry.balance?.toLocaleString('en-IN')}</td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )
+            }
+          ]}
+        />
       )}
 
       {/* Supplier Modal */}
@@ -212,7 +348,11 @@ const Suppliers = () => {
                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Address</label>
                     <textarea rows="2" className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary outline-none" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Rating (1-5)</label>
+                    <input type="number" min="1" max="5" className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary outline-none" value={formData.rating} onChange={e => setFormData({...formData, rating: parseInt(e.target.value)})} />
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Status</label>
                     <select className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary outline-none" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
                       <option value="Active">Active</option>

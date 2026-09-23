@@ -1,6 +1,7 @@
 const { spawn, execSync } = require('child_process');
 const path = require('path');
 const os = require('os');
+const fs = require('fs');
 
 console.log("🚀 Starting StockFlow Single Localhost Ecosystem...");
 
@@ -34,13 +35,33 @@ if (pythonCmd) {
   pythonProcess.stderr.on('data', (data) => console.error(`[ML ERROR] ${data}`));
 }
 
+// Build Frontend
+console.log(`🔨 Building React Frontend (This may take a moment)...`);
+const frontendPath = path.join(__dirname, 'frontend');
+try {
+  execSync('npm run build', { cwd: frontendPath, stdio: 'inherit' });
+  console.log(`✅ Frontend build complete.`);
+} catch (e) {
+  console.error(`❌ Frontend build failed:`, e.message);
+}
+
 // Start Node.js Express Backend
-console.log(`🟢 Starting Node.js Express Backend (Serving React on port 8072)...`);
+console.log(`🟢 Starting Node.js Express Backend (Serving React on port 5000)...`);
 const backendPath = path.join(__dirname, 'backend');
-const backendProcess = spawn('npm', ['run', 'start'], { // We use start to avoid nodemon restart loops
+
+if (!fs.existsSync(path.join(backendPath, 'node_modules'))) {
+  try {
+    console.log('📦 Ensuring backend dependencies are installed...');
+    execSync('npm install', { cwd: backendPath, stdio: 'inherit' });
+  } catch (e) {
+    console.error('❌ Failed to install backend dependencies', e.message);
+  }
+}
+
+const backendProcess = spawn('node', ['server.js'], {
   cwd: backendPath,
-  shell: true,
-  stdio: 'pipe'
+  stdio: 'pipe',
+  env: { ...process.env, PORT: '5000' }
 });
 
 backendProcess.stdout.on('data', (data) => console.log(`[NODE] ${data}`));

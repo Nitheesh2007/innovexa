@@ -7,11 +7,11 @@ const { protect } = require('../middleware/auth');
 // The crudRouter did not use protect by default on some routes, but it's best practice.
 // If it breaks, we can remove protect for development.
 router.route('/')
-  .get(getOrders)
-  .post(createOrder);
+  .get(protect, getOrders)
+  .post(protect, createOrder);
 
 router.route('/:id')
-  .get(getOrder)
-  .put(updateOrder);
+  .get(protect, getOrder)
+  .put(protect, updateOrder);
 
 module.exports = router;
