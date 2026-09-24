@@ -61,7 +61,7 @@ if (!fs.existsSync(path.join(backendPath, 'node_modules'))) {
 const backendProcess = spawn('node', ['server.js'], {
   cwd: backendPath,
   stdio: 'pipe',
-  env: { ...process.env, PORT: '5000' }
+  env: { ...process.env, PORT: process.env.PORT || '5000' }
 });
 
 backendProcess.stdout.on('data', (data) => console.log(`[NODE] ${data}`));
