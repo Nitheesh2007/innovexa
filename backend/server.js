@@ -54,6 +54,14 @@ app.use(async (req, res, next) => {
 // ----------------------------------------------------
 // Health & System Diagnostic Endpoints
 // ----------------------------------------------------
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'StockFlow Backend Service Running', timestamp: new Date().toISOString() });
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.get('/api', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'StockFlow API running', timestamp: new Date().toISOString() });
 });
