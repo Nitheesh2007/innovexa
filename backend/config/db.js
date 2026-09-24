@@ -8,20 +8,20 @@ const connectDB = async () => {
 
   const mongoUri = process.env.MONGODB_URI;
 
-  // On Vercel Serverless environment
-  if (process.env.VERCEL) {
+  // On Vercel or Netlify Serverless environment
+  if (process.env.VERCEL || process.env.NETLIFY) {
     if (!mongoUri) {
-      console.warn('⚠️ MONGODB_URI is not defined in Vercel environment variables. Please add MONGODB_URI in Vercel Project Settings to connect to MongoDB Atlas.');
+      console.warn('⚠️ MONGODB_URI is not defined in environment variables. Please add MONGODB_URI in Project Settings to connect to MongoDB Atlas.');
       return;
     }
     try {
       const conn = await mongoose.connect(mongoUri, {
         serverSelectionTimeoutMS: 5000
       });
-      console.log(`MongoDB Connected (Vercel Serverless): ${conn.connection.host}`);
+      console.log(`MongoDB Connected (Serverless): ${conn.connection.host}`);
       return conn;
     } catch (error) {
-      console.error(`MongoDB Vercel Connection Error: ${error.message}`);
+      console.error(`MongoDB Serverless Connection Error: ${error.message}`);
       return;
     }
   }
@@ -85,7 +85,7 @@ const connectDB = async () => {
       return conn;
     } catch (fallbackError) {
       console.error(`Fallback MongoDB Error: ${fallbackError.message}`);
-      if (!process.env.VERCEL) {
+      if (!(process.env.VERCEL || process.env.NETLIFY)) {
         process.exit(1);
       }
     }

@@ -137,7 +137,7 @@ const frontendPath = path.join(__dirname, '../frontend/dist');
 app.use(express.static(frontendPath));
 
 app.get('*', (req, res) => {
-  if (req.path.startsWith('/api/') || process.env.VERCEL) {
+  if (req.path.startsWith('/api/') || (process.env.VERCEL || process.env.NETLIFY)) {
     return res.status(404).json({ success: false, message: 'API endpoint not found' });
   }
   res.sendFile(path.join(frontendPath, 'index.html'));
@@ -167,7 +167,7 @@ async function startServer() {
     console.error("Database startup notice:", err.message);
   }
 
-  if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+  if (process.env.NODE_ENV !== 'test' && !(process.env.VERCEL || process.env.NETLIFY)) {
     app.listen(PORT, () => {
       console.log(`StockFlow Server running in ${process.env.NODE_ENV || 'production'} mode on port ${PORT}`);
     });
@@ -175,7 +175,7 @@ async function startServer() {
 }
 
 // Only start standalone server listener in local/dedicated server environment
-if (!process.env.VERCEL) {
+if (!(process.env.VERCEL || process.env.NETLIFY)) {
   startServer();
 }
 
