@@ -16,7 +16,8 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/backend/api.js"
+      "dest": "/backend/api.js",
+      "methods": ["GET","POST","PUT","PATCH","DELETE","OPTIONS"]
     },
     {
       "src": "/assets/(.*)",

@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+mongoose.set('bufferCommands', false);
+mongoose.set('bufferCommands', false);
 
 const connectDB = async () => {
   // Reuse existing connection if active
@@ -16,7 +18,8 @@ const connectDB = async () => {
     }
     try {
       const conn = await mongoose.connect(mongoUri, {
-        serverSelectionTimeoutMS: 5000
+        serverSelectionTimeoutMS: 30000,
+        connectTimeoutMS: 30000
       });
       console.log(`MongoDB Connected (Serverless): ${conn.connection.host}`);
       return conn;
